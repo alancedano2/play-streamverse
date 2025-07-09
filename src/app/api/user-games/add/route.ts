@@ -1,16 +1,15 @@
-import { NextResponse, NextRequest } from 'next/server';
-import { firestore } from '@/lib/firebaseAdmin';
-import * as admin from 'firebase-admin';
+import { NextResponse } from 'next/server';
+import { admin } from '@/lib/firebaseAdmin';
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const { clerkId, username, gameId, gameName } = await request.json();
+    const { clerkId, username, gameId, gameName } = await req.json();
 
     if (!clerkId || !gameId || !gameName) {
       return NextResponse.json({ error: 'Faltan datos requeridos' }, { status: 400 });
     }
 
-    const userGameRef = firestore.collection('userGames').doc(`${clerkId}_${gameId}`);
+    const userGameRef = admin.firestore().collection('userGames').doc(`${clerkId}_${gameId}`);
 
     await userGameRef.set(
       {
@@ -23,9 +22,9 @@ export async function POST(request: NextRequest) {
       { merge: true }
     );
 
-    return NextResponse.json({ success: true, message: 'Juego guardado/actualizado' });
+    return NextResponse.json({ success: true, message: 'Juego guardado/actualizado en la biblioteca' });
   } catch (error) {
-    console.error('Error inesperado al guardar el juego:', error);
+    console.error('Error inesperado al guardar el juego en Firebase:', error);
     return NextResponse.json({ error: 'Error inesperado al guardar el juego' }, { status: 500 });
   }
 }
