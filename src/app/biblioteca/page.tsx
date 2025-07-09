@@ -46,7 +46,6 @@ export default function BibliotecaPage() {
 
       try {
         const response = await fetch(`/api/user-games/get?clerkId=${user.id}`);
-
         if (!response.ok) {
           const errorData = await response.json();
           setUserGamesError(errorData.error || 'Error desconocido al cargar los juegos.');
@@ -94,7 +93,6 @@ export default function BibliotecaPage() {
       if (value.length > 2) {
         try {
           const response = await fetch(`/api/games/search?query=${encodeURIComponent(value)}`);
-          
           if (!response.ok) {
             const errorData = await response.json();
             console.error('Error fetching from local API:', errorData.error);
@@ -131,7 +129,6 @@ export default function BibliotecaPage() {
 
   const handleGameSelection = async (gameName: string) => {
     console.log("handleGameSelection called for:", gameName);
-
     setSearchTerm(gameName);
     setSearchResults([]);
 
@@ -140,9 +137,7 @@ export default function BibliotecaPage() {
     try {
       const response = await fetch('/api/request-game-email', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gameName, requestedByUsername: requesterUsername }),
       });
 
@@ -208,9 +203,9 @@ export default function BibliotecaPage() {
                           sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
                         />
                         {game.status !== 'Disponible' && (
-                           <span className="absolute top-2 right-2 bg-yellow-600 text-white text-xs font-semibold px-2 py-1 rounded-full z-10">
-                             No Disponible
-                           </span>
+                          <span className="absolute top-2 right-2 bg-yellow-600 text-white text-xs font-semibold px-2 py-1 rounded-full z-10">
+                            No Disponible
+                          </span>
                         )}
                       </div>
                       <div className="p-4">
@@ -218,7 +213,7 @@ export default function BibliotecaPage() {
                         <p className="text-sm text-[#B0B0B0] mb-3">{game.platform}</p>
                         <p className="text-xs text-[#777]">Añadido: {new Date(game.addedAt._seconds * 1000).toLocaleDateString()}</p>
                         <button className="mt-4 w-full bg-[#008CFF] text-white py-2 px-4 rounded-md hover:bg-[#00A0FF] font-semibold transition">
-                            Ver Detalles
+                          Ver Detalles
                         </button>
                       </div>
                     </div>
@@ -226,7 +221,7 @@ export default function BibliotecaPage() {
                 </div>
               ) : (
                 <div className="text-center">
-                  <p className="text-xl text-[#00ADB5] mb-4">&iexcl;Tu biblioteca est&aacute; esperando juegos!</p>/* <--- ¡AQUÍ ESTÁ LA CORRECCIÓN! */}
+                  <p className="text-xl text-[#00ADB5] mb-4">&iexcl;Tu biblioteca est&aacute; esperando juegos!</p>
                   <p className="text-[#B0B0B0]">
                     Añade tus favoritos desde la <Link href="/lista-juegos" className="text-[#008CFF] hover:underline">Lista de Juegos</Link> para empezar a construir tu colección.
                   </p>
