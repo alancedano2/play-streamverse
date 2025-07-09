@@ -226,7 +226,7 @@ export default function BibliotecaPage() {
                 </div>
               ) : (
                 <div className="text-center">
-                  <p className="text-xl text-[#00ADB5] mb-4">{`&iexcl;Tu biblioteca está esperando juegos!`}</p> {/* <-- LÍNEA CORREGIDA */}
+                  <p className="text-xl text-[#00ADB5] mb-4">{`&iexcl;Tu biblioteca está esperando juegos!`}</p> {/* <--- ¡AQUÍ ESTÁ LA CORRECCIÓN! */}
                   <p className="text-[#B0B0B0]">
                     Añade tus favoritos desde la <Link href="/lista-juegos" className="text-[#008CFF] hover:underline">Lista de Juegos</Link> para empezar a construir tu colección.
                   </p>
