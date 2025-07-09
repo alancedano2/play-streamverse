@@ -6,6 +6,5 @@ if (!admin.apps.length) {
   });
 }
 
-// Exporta solo lo que realmente usas. Si necesitas `app`, úsalo o ignóralo.
 export const auth = admin.auth();
 export const firestore = admin.firestore();
