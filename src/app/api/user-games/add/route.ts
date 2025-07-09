@@ -1,7 +1,6 @@
-// src/app/api/user-games/add/route.ts
 import { NextResponse } from 'next/server';
-import { firestore as db } from '@/lib/firebaseAdmin'; // Importa la instancia de Firestore
-import * as admin from 'firebase-admin'; // Necesario para FieldValue.serverTimestamp()
+import { firestore as db } from '@/lib/firebaseAdmin';
+import * as admin from 'firebase-admin';
 
 export async function POST(req: Request) {
   try {
