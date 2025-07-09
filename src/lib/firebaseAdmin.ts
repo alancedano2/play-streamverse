@@ -1,4 +1,4 @@
-import * as admin from 'firebase-admin';
+import { admin } from '@/lib/firebaseAdmin';
 
 if (!admin.apps.length) {
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
