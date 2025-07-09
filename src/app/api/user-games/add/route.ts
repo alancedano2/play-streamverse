@@ -1,16 +1,16 @@
-import { NextResponse } from 'next/server';
-import { firestore as db } from '@/lib/firebaseAdmin';
+import { NextResponse, type NextRequest } from 'next/server';
+import { firestore } from '@/lib/firebaseAdmin';
 import * as admin from 'firebase-admin';
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { clerkId, username, gameId, gameName } = await req.json();
+    const { clerkId, username, gameId, gameName } = await request.json();
 
     if (!clerkId || !gameId || !gameName) {
       return NextResponse.json({ error: 'Faltan datos requeridos' }, { status: 400 });
     }
 
-    const userGameRef = db.collection('userGames').doc(`${clerkId}_${gameId}`);
+    const userGameRef = firestore.collection('userGames').doc(`${clerkId}_${gameId}`);
 
     await userGameRef.set(
       {
