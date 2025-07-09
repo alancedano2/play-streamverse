@@ -58,14 +58,21 @@ export default function BibliotecaPage() {
         const gamesFromFirebase: UserGame[] = data.data;
 
         const mergedGames = gamesFromFirebase.map(ug => {
-          const originalGame = games.find(g => String(g.id) === String(ug.gameId));
-          return {
-            ...ug,
-            logoUrl: originalGame?.logoUrl || '/path/to/default-logo.png',
-            platform: originalGame?.platform || 'Desconocido',
-            status: originalGame?.status || 'Desconocido',
-          };
-        });
+  const originalGame = games.find(g => String(g.id) === String(ug.gameId));
+
+  // Normalizar status a los valores permitidos
+  let status: "Disponible" | "No disponible" = "No disponible";
+  if (originalGame?.status?.toLowerCase() === "disponible") {
+    status = "Disponible";
+  }
+
+  return {
+    ...ug,
+    logoUrl: originalGame?.logoUrl || '/path/to/default-logo.png',
+    platform: originalGame?.platform || 'Desconocido',
+    status,  // Aquí asignamos el status normalizado
+  };
+});
 
         setUserGames(mergedGames);
       } catch (error) {
