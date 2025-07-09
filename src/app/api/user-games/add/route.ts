@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { firestore } from '@/lib/firebaseAdmin';
 import * as admin from 'firebase-admin';
 
@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
       { merge: true }
     );
 
-    return NextResponse.json({ success: true, message: 'Juego guardado/actualizado en la biblioteca' });
+    return NextResponse.json({ success: true, message: 'Juego guardado/actualizado' });
   } catch (error) {
-    console.error('Error inesperado al guardar el juego en Firebase:', error);
+    console.error('Error inesperado al guardar el juego:', error);
     return NextResponse.json({ error: 'Error inesperado al guardar el juego' }, { status: 500 });
   }
 }
