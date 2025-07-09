@@ -1,13 +1,13 @@
-import { auth } from '@clerk/nextjs'; // o donde sea que lo importas
+'use client';
+import { auth } from '@clerk/nextjs';
 
 export default function HomePage() {
-  const user = auth(); // Usa la función aunque sea por ahora
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const user = auth(); // Se mantiene para futuras funciones
 
   return (
     <main>
       <h1>Bienvenido</h1>
-      {/* Puedes mostrar info del usuario si quieres */}
-      {/* <pre>{JSON.stringify(user, null, 2)}</pre> */}
     </main>
   );
 }
