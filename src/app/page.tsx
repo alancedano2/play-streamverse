@@ -1,11 +1,11 @@
-'use client';
-
 import { currentUser } from '@clerk/nextjs/server';
 
-export default function Page() {
-  const { user, isSignedIn } = useUser();
+export default async function HomePage() {
+  const user = await currentUser();
 
-  if (!isSignedIn) return <div>No estás logueado</div>;
+  if (!user) {
+    return <div>No estás logueado</div>;
+  }
 
   return <div>Hola, {user.firstName}</div>;
 }
