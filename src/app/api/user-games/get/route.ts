@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { firestore as db } from '@/lib/firebaseAdmin';
+import { NextResponse, type NextRequest } from 'next/server';
+import { firestore } from '@/lib/firebaseAdmin';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,15 +10,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Falta clerkId' }, { status: 400 });
     }
 
-    const snapshot = await db.collection('userGames')
-      .where('clerkId', '==', clerkId)
-      .get();
+    const snapshot = await firestore.collection('userGames').where('clerkId', '==', clerkId).get();
 
-    const userGames = snapshot.docs.map(doc => doc.data());
+    const games = snapshot.docs.map(doc => doc.data());
 
-    return NextResponse.json({ success: true, userGames });
+    return NextResponse.json({ success: true, games });
   } catch (error) {
-    console.error('Error al obtener juegos del usuario:', error);
-    return NextResponse.json({ error: 'Error inesperado al obtener juegos' }, { status: 500 });
+    console.error('Error fetching user games:', error);
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 });
   }
 }
