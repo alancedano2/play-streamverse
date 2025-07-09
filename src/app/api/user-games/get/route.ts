@@ -26,15 +26,13 @@ export async function GET(req: Request) {
                                       .where('clerkId', '==', clerkId)
                                       .get();
 
-    // Tipamos explícitamente el array userGames con la nueva interfaz
-    const userGames: FirestoreUserGame[] = [];
+    const userGames: FirestoreUserGame[] = []; // <--- ¡AQUÍ SE QUITA EL 'any' RESTANTE!
     userGamesSnapshot.forEach(doc => {
-      // Al añadir, aseguramos que el ID del documento también se incluya y que los datos coincidan con la interfaz
       userGames.push({ id: doc.id, ...(doc.data() as FirestoreUserGame) });
     });
 
     return NextResponse.json({ success: true, data: userGames });
-  } catch (error: any) { // Tipamos 'error' como 'any' en el catch para evitar linting warnings si no se usa instanceOf
+  } catch (error: any) { // El 'any' aquí está permitido en los catch blocks por las reglas de ESLint
     console.error('Error al obtener juegos del usuario desde Firebase:', error);
     return NextResponse.json({ error: 'Error al obtener los juegos del usuario', details: error.message || 'No details' }, { status: 500 });
   }
