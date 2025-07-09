@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
     await resend.emails.send({
       from: "onboarding@resend.dev",
-      to "fraelvillegasplay8@gmail.com",
+      to: "fraelvillegasplay8@gmail.com",
       subject,
       html,
     });
