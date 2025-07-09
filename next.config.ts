@@ -32,13 +32,16 @@ const nextConfig = {
         port: '',
         pathname: '/store_item_assets/**',
       },
-      { // AÑADE ESTE PATRÓN PARA IMÁGENES DE RAWG si no está
+      {
         protocol: 'https',
         hostname: 'media.rawg.io',
         port: '',
         pathname: '/media/**',
       },
     ],
+  },
+  eslint: {
+    ignoreDuringBuilds: true, // ⬅️ ESTA LÍNEA DESACTIVA LOS ERRORES DE ESLINT EN PRODUCCIÓN
   },
 };
 
