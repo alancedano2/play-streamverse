@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { currentUser } from '@clerk/nextjs/server';
 
 export default function Page() {
   const { user, isSignedIn } = useUser();
