@@ -1,14 +1,36 @@
-// src/app/api/games/search/route.ts
 import { NextResponse } from 'next/server';
+
+// Definimos interfaces para la estructura esperada de los datos de RAWG API
+interface PlatformDetail {
+  name: string;
+}
+
+interface Platform {
+  platform: PlatformDetail;
+}
+
+interface RawgGameResult {
+  id: number; // El ID de RAWG es numérico
+  name: string;
+  background_image: string | null;
+  platforms?: Platform[]; // 'platforms' puede ser opcional
+}
+
+// Interfaz para el formato de juego que tu front-end espera
+interface GameData {
+  id: string;
+  name: string;
+  logoUrl: string;
+  platform: string;
+  status: string; // Asumiendo que 'Desconocido' es un string
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get('query'); // Término de búsqueda
-  const rawgApiKey = process.env.RAWG_API_KEY; // Obtiene la clave API de las variables de entorno
+  const query = searchParams.get('query');
+  const rawgApiKey = process.env.RAWG_API_KEY;
 
   if (!rawgApiKey) {
-    // En un entorno de producción, esto debería ser un error más genérico para el cliente.
-    // Pero para desarrollo, es útil saber el error específico.
     console.error("RAWG_API_KEY no configurada en el servidor.");
     return NextResponse.json({ error: 'Server API key not configured' }, { status: 500 });
   }
@@ -28,13 +50,14 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: `Failed to fetch from RAWG API: ${response.statusText}` }, { status: response.status });
     }
 
-    const data = await response.json();
-    const games = data.results.map((game: any) => ({
-      id: game.id.toString(),
+    const data: { results: RawgGameResult[] } = await response.json(); // Tipamos la respuesta
+
+    const games: GameData[] = data.results.map((game: RawgGameResult) => ({ // Usamos RawgGameResult
+      id: game.id.toString(), // Convertimos a string para compatibilidad con tu interfaz Game
       name: game.name,
       logoUrl: game.background_image || '/placeholder-game.png',
-      platform: game.platforms?.map((p: any) => p.platform.name).join(', ') || 'N/A',
-      status: 'Desconocido', // Este estado es de tu DB interna, RAWG no lo provee.
+      platform: game.platforms?.map((p: Platform) => p.platform.name).join(', ') || 'N/A', // Usamos Platform
+      status: 'Desconocido',
     }));
 
     return NextResponse.json(games);
