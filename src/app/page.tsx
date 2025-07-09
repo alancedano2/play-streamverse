@@ -1,13 +1,9 @@
-'use client';
-import { auth } from '@clerk/nextjs';
+import { currentUser } from '@clerk/nextjs/server';
 
-export default function HomePage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const user = auth(); // Se mantiene para futuras funciones
+export default async function Page() {
+  const user = await currentUser();
 
-  return (
-    <main>
-      <h1>Bienvenido</h1>
-    </main>
-  );
+  if (!user) return <div>No estás logueado</div>;
+
+  return <div>Hola, {user.firstName}</div>;
 }
