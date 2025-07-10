@@ -1,17 +1,10 @@
 export async function lanzarJuego(gameId: string) {
-  const response = await fetch("https://20f204adf8c1.ngrok-free.app/start", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": "6E4B866CF3FA4724757FC96A9369F",
-    },
-    body: JSON.stringify({ game: gameId }),
+  const res = await fetch('https://20f204adf8c1.ngrok-free.app/api/lanzar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ gameId }),
   });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Error al lanzar el juego");
-  }
-
-  return await response.json();
+  if (!res.ok) throw new Error(await res.text());
+  return await res.json();
 }
