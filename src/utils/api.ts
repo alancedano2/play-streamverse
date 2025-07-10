@@ -1,10 +1,14 @@
+// src/utils/api.ts
+
 export async function lanzarJuego(gameId: string) {
-  const res = await fetch('https://82aa21c82b66.ngrok-free.app/api/lanzar', {
+  const response = await fetch('/api/proxy-lanzar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ gameId }),
   });
-
-  if (!res.ok) throw new Error(await res.text());
-  return await res.json();
+  if (!response.ok) {
+    const errData = await response.json();
+    throw new Error(errData.error || 'Error desconocido');
+  }
+  return response.json();
 }
