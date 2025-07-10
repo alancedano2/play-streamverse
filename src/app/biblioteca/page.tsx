@@ -35,10 +35,13 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ game, onClose }) => (
       >
         &times;
       </button>
-      <div className="p-8 text-center"> {/* Added text-center here for content */}
-        <h2 className="text-3xl font-bold mb-8 text-[#008CFF]">Descargar Moonlight para {game.gameName}</h2>
-        <p className="text-lg text-[#B0B0B0] mb-8">
-          Para poder lanzar tus juegos en la nube, necesitas la aplicación Moonlight.
+      <div className="p-8 text-center">
+        <h2 className="text-3xl font-bold mb-4 text-[#008CFF]">Información para {game.gameName}</h2>
+        <div className="aspect-video w-full mb-6 bg-[#282A31] rounded-md overflow-hidden flex items-center justify-center text-[#B0B0B0]">
+          {/* Video frame is kept empty, can be used for embedded content later */}
+        </div>
+        <p className="text-lg text-[#B0B0B0] mb-6">
+          Para poder disfrutar de tus juegos en la nube, es necesario que descargues e instales Moonlight.
         </p>
         <Link
           href="https://github.com/moonlight-stream/moonlight-qt/releases/download/v6.1.0/MoonlightSetup-6.1.0.exe"
@@ -49,7 +52,7 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ game, onClose }) => (
           Descargar Moonlight
         </Link>
         <p className="text-sm text-[#777] mt-4">
-          Una vez descargado e instalado Moonlight, puedes volver aquí para iniciar tus juegos.
+          Una vez que hayas instalado Moonlight, vuelve a esta página para lanzar tu juego.
         </p>
       </div>
     </div>
@@ -216,7 +219,7 @@ export default function BibliotecaPage() {
   };
 
   const handleLanzar = async (game: UserGame) => {
-    setSelectedGameForTutorial(game); // Open tutorial modal
+    setSelectedGameForTutorial(game); // Open tutorial modal (now download prompt)
     setToast(`Mostrando información para: ${game.gameName}`);
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     toastTimeoutRef.current = setTimeout(() => setToast(null), 4000);
