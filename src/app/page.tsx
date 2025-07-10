@@ -43,7 +43,7 @@ export default function HomePage() {
 
   // If the user is signed in, display the regular home page content
   return (
-    <div className="min-h-screen bg-[#1A1A1D] text-[#E0E0E0] p-8 pt-28 flex flex-col items-center">
+    <div className="min-h-screen bg-[#1A1A1D] text-[#E0E0E0] p-8 flex flex-col justify-center items-center"> {/* Removed pt-28, added justify-center */}
       <h1 className="text-4xl font-bold mb-8 text-[#008CFF]">¡Bienvenido a StreamVerse Games!</h1>
 
       <p className="text-lg text-[#B0B0B0] text-center mb-10 max-w-3xl">
@@ -71,9 +71,8 @@ export default function HomePage() {
         </Link>
       </div>
 
-      {/* Optionally, you can add more sections for signed-in users */}
       <div className="mt-16 text-center text-[#B0B0B0]">
-        <p>¿Necesitas ayuda para conectar Sunshine? Visita nuestra página de <Link href="/sunshine-connect" className="text-[#008CFF] hover:underline">conexión Sunshine</Link>.</p>
+        <p>¿Necesitas ayuda para conectar Sunshine? Visita nuestro canal de <Link href="https://discord.com/invite/p4k2EpQ8BZ" target="_blank" rel="noopener noreferrer" className="text-[#008CFF] hover:underline">Discord</Link>.</p> {/* Updated link and text */}
       </div>
     </div>
   );
