@@ -1,21 +1,26 @@
+// src/utils/api.ts
+
 export async function lanzarJuego(gameId: string) {
-  const response = await fetch('/api/proxy-lanzar', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ gameId }),
-  });
+  const NGROK_URL = "https://85ed7ac043b9.ngrok-free.app"; // Reemplaza si cambia
 
-  const text = await response.text();
-  let data;
   try {
-    data = JSON.parse(text);
-  } catch {
-    throw new Error('Respuesta no válida del servidor.');
-  }
+    const response = await fetch(`${NGROK_URL}/api/lanzar`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ gameId }),
+    });
 
-  if (!response.ok) {
-    throw new Error(data.error || 'Error desconocido');
-  }
+    const result = await response.json();
 
-  return data;
+    if (!response.ok) {
+      throw new Error(result.error || 'Error desconocido');
+    }
+
+    return result;
+  } catch (error: any) {
+    console.error('Error lanzando juego desde frontend:', error);
+    throw new Error(error.message || 'Error al lanzar juego');
+  }
 }
