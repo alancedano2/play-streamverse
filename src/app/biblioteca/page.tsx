@@ -4,68 +4,59 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-// Importamos el tipo Game, pero el array 'games' se importa en lista-juegos/page.tsx
-import { games, Game } from '@/data/games'; // Asegúrate de que esta interfaz Game es compatible con los datos de Firebase
+import { games, Game } from '@/data/games'; 
 import { useUser } from '@clerk/nextjs';
+import { lanzarJuego } from '@/utils/api';
 
-// Define una interfaz para los juegos de la biblioteca del usuario, incluyendo campos de Firebase
 interface UserGame extends Game {
   clerkId: string;
   username: string;
   addedAt: {
     _seconds: number;
     _nanoseconds: number;
-  }; // Firebase Timestamp
-  id: string; // El ID del documento de Firestore
-  gameId: string; // ID del juego de la data/games o RAWG
-  gameName: string; // Nombre del juego
-  // Añade aquí cualquier otro campo que guardes en Firebase si es necesario
-  // ¡CORRECCIÓN AQUÍ! Ampliamos el tipo de 'status' para permitir 'Desconocido'
-  status: 'Disponible' | 'No disponible' | 'Desconocido'; 
+  };
+  id: string;
+  gameId: string;
+  gameName: string;
+  status: 'Disponible' | 'No disponible' | 'Desconocido';
 }
 
-// NUEVO: Componente Modal de Tutoriales
 interface TutorialModalProps {
-  game: UserGame; // El juego para el que se muestran los tutoriales
-  onClose: () => void; // Función para cerrar el modal
+  game: UserGame; 
+  onClose: () => void; 
 }
 
-const TutorialModal: React.FC<TutorialModalProps> = ({ game, onClose }) => {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
-      <div className="bg-[#1A1A1D] rounded-lg shadow-xl border border-[#3A3D44] max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-[#E0E0E0] hover:text-[#008CFF] text-3xl font-bold p-1 rounded-full"
-        >
-          &times; {/* Símbolo de la 'x' para cerrar */}
-        </button>
-        <div className="p-8">
-          <h2 className="text-3xl font-bold mb-4 text-[#008CFF] text-center">{game.gameName} - Tutoriales</h2>
-          <div className="aspect-video w-full mb-4 bg-[#282A31] rounded-md overflow-hidden flex items-center justify-center text-[#B0B0B0]">
-            {/* Aquí puedes incrustar un reproductor de YouTube, un iframe, etc. */}
-            {/* Por ahora, es un placeholder */}
-            <p>Contenido del tutorial (ej. video de YouTube incrustado)</p>
-          </div>
-          <p className="text-lg text-[#B0B0B0] mb-4">
-            Aquí irán los enlaces o el contenido de los tutoriales para "{game.gameName}".
-            Podrías tener:
-          </p>
-          <ul className="list-disc list-inside text-[#E0E0E0] space-y-2">
-            <li><Link href="#" className="text-[#00ADB5] hover:underline">Video Tutorial Básico</Link></li>
-            <li><Link href="#" className="text-[#00ADB5] hover:underline">Guía Escrita para Principiantes</Link></li>
-            <li><Link href="#" className="text-[#00ADB5] hover:underline">Consejos Avanzados</Link></li>
-          </ul>
-          {/* Puedes añadir más detalles del juego o enlaces relevantes aquí */}
+const TutorialModal: React.FC<TutorialModalProps> = ({ game, onClose }) => (
+  <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
+    <div className="bg-[#1A1A1D] rounded-lg shadow-xl border border-[#3A3D44] max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+      <button
+        onClick={onClose}
+        className="absolute top-3 right-3 text-[#E0E0E0] hover:text-[#008CFF] text-3xl font-bold p-1 rounded-full"
+      >
+        &times;
+      </button>
+      <div className="p-8">
+        <h2 className="text-3xl font-bold mb-4 text-[#008CFF] text-center">{game.gameName} - Tutoriales</h2>
+        <div className="aspect-video w-full mb-4 bg-[#282A31] rounded-md overflow-hidden flex items-center justify-center text-[#B0B0B0]">
+          <p>Contenido del tutorial (ej. video de YouTube incrustado)</p>
         </div>
+        <p className="text-lg text-[#B0B0B0] mb-4">
+          Aquí irán los enlaces o el contenido de los tutoriales para "{game.gameName}".
+          Podrías tener:
+        </p>
+        <ul className="list-disc list-inside text-[#E0E0E0] space-y-2">
+          <li><Link href="#" className="text-[#00ADB5] hover:underline">Video Tutorial Básico</Link></li>
+          <li><Link href="#" className="text-[#00ADB5] hover:underline">Guía Escrita para Principiantes</Link></li>
+          <li><Link href="#" className="text-[#00ADB5] hover:underline">Consejos Avanzados</Link></li>
+        </ul>
       </div>
     </div>
-  );
-};
-
+  </div>
+);
 
 export default function BibliotecaPage() {
   const { user, isLoaded, isSignedIn } = useUser();
+
   const [activeTab, setActiveTab] = useState<'myGames' | 'requestGame'>('myGames');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Game[]>([]);
@@ -79,6 +70,9 @@ export default function BibliotecaPage() {
   const [userGamesError, setUserGamesError] = useState<string | null>(null);
 
   const [selectedGameForTutorial, setSelectedGameForTutorial] = useState<UserGame | null>(null);
+
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const fetchUserGames = async () => {
@@ -111,7 +105,7 @@ export default function BibliotecaPage() {
             ...ug,
             logoUrl: originalGame?.logoUrl || '/path/to/default-logo.png',
             platform: originalGame?.platform || 'Desconocido',
-            status: originalGame?.status || 'Desconocido', // Aquí 'Desconocido' es ahora compatible
+            status: originalGame?.status || 'Desconocido',
           };
         });
 
@@ -136,7 +130,6 @@ export default function BibliotecaPage() {
     setSelectedGameForTutorial(null);
   };
 
-
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -150,7 +143,7 @@ export default function BibliotecaPage() {
       if (value.length > 2) {
         try {
           const response = await fetch(`/api/games/search?query=${encodeURIComponent(value)}`);
-          
+
           if (!response.ok) {
             const errorData = await response.json();
             console.error('Error fetching from local API:', errorData.error);
@@ -182,12 +175,13 @@ export default function BibliotecaPage() {
       if (messageTimeoutRef.current) {
         clearTimeout(messageTimeoutRef.current);
       }
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
     };
   }, []);
 
   const handleGameSelection = async (gameName: string) => {
-    console.log("handleGameSelection called for:", gameName);
-
     setSearchTerm(gameName);
     setSearchResults([]);
 
@@ -222,8 +216,25 @@ export default function BibliotecaPage() {
     }
   };
 
+  const handleLanzar = async (gameId: string) => {
+    try {
+      const res = await lanzarJuego(gameId);
+      setToast(`✅ ${res.status}`);
+    } catch (err: any) {
+      setToast(`❌ Error al lanzar juego: ${err.message}`);
+    }
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 4000);
+  };
+
   return (
     <div className="min-h-screen bg-[#1A1A1D] text-[#E0E0E0] p-8 pt-28 flex flex-col items-center">
+      {toast && (
+        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 bg-green-600 text-white py-2 px-6 rounded-lg shadow-lg z-50">
+          {toast}
+        </div>
+      )}
+
       <h1 className="text-4xl font-bold mb-8 text-[#008CFF]">Mi Biblioteca</h1>
 
       <div className="flex justify-center mb-8 bg-[#282A31] rounded-xl p-2 gap-2 max-w-lg w-full">
@@ -279,13 +290,19 @@ export default function BibliotecaPage() {
                         >
                             Ver Tutoriales
                         </button>
+                        <button
+                          onClick={() => handleLanzar(game.gameId)}
+                          className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 font-semibold transition"
+                        >
+                          Lanzar Juego
+                        </button>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center">
-                  <p className="text-xl text-[#00ADB5] mb-4">{`&iexcl;Tu biblioteca está esperando juegos!`}</p>
+                  <p className="text-xl text-[#00ADB5] mb-4">{`¡Tu biblioteca está esperando juegos!`}</p>
                   <p className="text-[#B0B0B0]">
                     Añade tus favoritos desde la <Link href="/lista-juegos" className="text-[#008CFF] hover:underline">Lista de Juegos</Link> para empezar a construir tu colección.
                   </p>
@@ -345,7 +362,6 @@ export default function BibliotecaPage() {
         )}
       </div>
 
-      {/* Renderizar el Modal de Tutoriales si hay un juego seleccionado */}
       {selectedGameForTutorial && (
         <TutorialModal game={selectedGameForTutorial} onClose={handleCloseTutorialModal} />
       )}
