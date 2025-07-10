@@ -5,7 +5,7 @@ export interface Game {
   id: string;
   name: string;
   logoUrl: string;
-  status: 'Disponible' | 'No disponible';
+  status: 'Disponible' | 'No disponible' | 'Desconocido'; // <--- ¡CORRECCIÓN AQUÍ!
   platform: string;
   note?: string; // Propiedad opcional
 }
