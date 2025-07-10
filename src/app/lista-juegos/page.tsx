@@ -1,132 +1,75 @@
+// src/app/lista-juegos/page.tsx
 'use client';
 
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { games, Game } from '@/data/games';
 import { useUser } from '@clerk/nextjs';
-import { lanzarJuego } from '@/utils/api';
 
 export default function ListaJuegosPage() {
   const { user, isLoaded, isSignedIn } = useUser();
-  const [addMessage, setAddMessage] = useState<string | null>(null);
-  const [messageType, setMessageType] = useState<'success' | 'error' | null>(null);
-  const [loadingLaunch, setLoadingLaunch] = useState<string | null>(null);
+  const [addingGameId, setAddingGameId] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   const handleAddToLibrary = async (game: Game) => {
-    if (!isSignedIn || !user || !user.id || !user.username) {
-      setAddMessage('Debes iniciar sesión para añadir juegos a tu biblioteca.');
-      setMessageType('error');
-      setTimeout(() => setAddMessage(null), 5000);
+    if (!isSignedIn || !user) {
+      setMessage('Debes iniciar sesión para añadir juegos.');
+      setTimeout(() => setMessage(null), 4000);
       return;
     }
-
-    setAddMessage(`Añadiendo "${game.name}"...`);
-    setMessageType(null);
-
+    setAddingGameId(game.id);
     try {
       const response = await fetch('/api/user-games/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           clerkId: user.id,
-          username: user.username,
           gameId: game.id,
           gameName: game.name,
+          username: user.username || user.firstName || 'Usuario',
         }),
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setAddMessage(`"${game.name}" ha sido añadido a tu biblioteca.`);
-        setMessageType('success');
-      } else {
-        setAddMessage(`Error al añadir "${game.name}": ${data.error || 'Error desconocido'}`);
-        setMessageType('error');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al añadir el juego.');
       }
-    } catch (error) {
-      setAddMessage(`Error de conexión al añadir "${game.name}".`);
-      setMessageType('error');
+      setMessage(`"${game.name}" añadido a tu biblioteca.`);
+    } catch (error: any) {
+      setMessage(`Error: ${error.message}`);
     } finally {
-      setTimeout(() => setAddMessage(null), 5000);
+      setAddingGameId(null);
+      setTimeout(() => setMessage(null), 4000);
     }
   };
-
-  const handleLanzar = async (gameId: string) => {
-    try {
-      setLoadingLaunch(gameId);
-      const res = await lanzarJuego(gameId);
-      alert(res.status);
-    } catch (err: any) {
-      alert("Error: " + err.message);
-    } finally {
-      setLoadingLaunch(null);
-    }
-  };
-
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#1A1A1D] text-white pt-20">
-        Cargando usuario...
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-[#1A1A1D] text-[#E0E0E0] p-8 pt-28 flex flex-col items-center">
-      <h1 className="text-4xl font-bold mb-8 text-[#008CFF]">Lista de Juegos</h1>
-      <p className="text-lg text-[#B0B0B0] text-center max-w-2xl mb-12">
-        Explora una vasta colección de juegos disponibles en StreamVerse Gaming. ¡Prepárate para nuevas aventuras!
-      </p>
+    <div className="min-h-screen bg-[#1A1A1D] text-white p-8 pt-28">
+      <h1 className="text-4xl font-bold mb-10 text-[#008CFF] text-center">Lista de Juegos</h1>
 
-      {addMessage && (
-        <div className={`mb-4 p-3 rounded-md text-center max-w-md w-full animate-fade-in-down
-          ${messageType === 'success' ? 'bg-green-700 bg-opacity-30 text-green-200 border border-green-600' : 'bg-red-700 bg-opacity-30 text-red-200 border border-red-600'}`}
-        >
-          {addMessage}
+      {message && (
+        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 bg-green-600 text-white py-2 px-6 rounded-lg shadow-lg z-50">
+          {message}
         </div>
       )}
 
-      <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {games.map((game: Game) => (
-          <div key={game.id} className="bg-[#282A31] rounded-md border border-[#3A3D44] shadow-lg overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:shadow-xl">
-            <div className="relative w-full aspect-video overflow-hidden">
-              <Image
-                src={game.logoUrl}
-                alt={game.name}
-                fill
-                style={{ objectFit: 'cover' }}
-                className="rounded-t-md"
-                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-              />
-              {game.note && (
-                <span className="absolute top-2 right-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-full z-10">
-                  {game.note}
-                </span>
-              )}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        {games.map((game) => (
+          <div key={game.id} className="bg-[#282A31] p-4 rounded-lg shadow-md border border-[#3A3D44] flex flex-col items-center">
+            <div className="aspect-video relative w-full mb-4">
+              <Image src={game.logoUrl} alt={game.name} fill className="object-cover rounded" />
             </div>
-            <div className="p-4">
-              <h2 className="text-xl font-semibold mb-2 text-[#00ADB5]">{game.name}</h2>
-              <p className="text-sm text-[#B0B0B0] mb-3">{game.platform}</p>
-              <div className="flex items-center mb-4">
-                <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full ${game.status === 'Disponible' ? 'bg-green-600 bg-opacity-20 text-green-300' : 'bg-red-600 bg-opacity-20 text-red-300'}`}>
-                  {game.status}
-                </span>
-              </div>
-              <button
-                onClick={() => handleAddToLibrary(game)}
-                className="mt-2 w-full bg-[#008CFF] text-white py-2 px-4 rounded-md hover:bg-[#00A0FF] font-semibold transition"
-              >
-                Añadir a la biblioteca
-              </button>
-              <button
-                onClick={() => handleLanzar(game.id)}
-                className="mt-2 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 font-semibold transition disabled:opacity-50"
-                disabled={loadingLaunch === game.id}
-              >
-                {loadingLaunch === game.id ? 'Lanzando...' : 'Lanzar juego'}
-              </button>
-            </div>
+            <h2 className="text-xl font-semibold text-[#00ADB5] mb-4">{game.name}</h2>
+            <button
+              disabled={addingGameId === game.id}
+              onClick={() => handleAddToLibrary(game)}
+              className={`w-full py-2 rounded-md font-semibold transition ${
+                addingGameId === game.id
+                  ? 'bg-gray-500 cursor-not-allowed'
+                  : 'bg-[#008CFF] hover:bg-[#00A0FF]'
+              }`}
+            >
+              {addingGameId === game.id ? 'Añadiendo...' : 'Añadir a la Biblioteca'}
+            </button>
           </div>
         ))}
       </div>
