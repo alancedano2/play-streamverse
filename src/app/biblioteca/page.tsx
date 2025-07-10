@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { games, Game } from '@/data/games'; 
+import { games, Game } from '@/data/games';
 import { useUser } from '@clerk/nextjs';
 import { lanzarJuego } from '@/utils/api';
 
@@ -22,8 +22,8 @@ interface UserGame extends Game {
 }
 
 interface TutorialModalProps {
-  game: UserGame; 
-  onClose: () => void; 
+  game: UserGame;
+  onClose: () => void;
 }
 
 const TutorialModal: React.FC<TutorialModalProps> = ({ game, onClose }) => (
@@ -122,9 +122,6 @@ export default function BibliotecaPage() {
     fetchUserGames();
   }, [user, isLoaded, isSignedIn]);
 
-  const handleViewTutorials = (game: UserGame) => {
-    setSelectedGameForTutorial(game);
-  };
 
   const handleCloseTutorialModal = () => {
     setSelectedGameForTutorial(null);
@@ -216,13 +213,9 @@ export default function BibliotecaPage() {
     }
   };
 
-  const handleLanzar = async (gameId: string) => {
-    try {
-      const res = await lanzarJuego(gameId);
-      setToast(`✅ ${res.status}`);
-    } catch (err: any) {
-      setToast(`❌ Error al lanzar juego: ${err.message}`);
-    }
+  const handleLanzar = async (game: UserGame) => {
+    setSelectedGameForTutorial(game); // Open tutorial modal
+    setToast(`Mostrando tutorial para: ${game.gameName}`);
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     toastTimeoutRef.current = setTimeout(() => setToast(null), 4000);
   };
@@ -285,13 +278,7 @@ export default function BibliotecaPage() {
                         <p className="text-sm text-[#B0B0B0] mb-3">{game.platform}</p>
                         <p className="text-xs text-[#777]">Añadido: {new Date(game.addedAt._seconds * 1000).toLocaleDateString()}</p>
                         <button
-                          onClick={() => handleViewTutorials(game)}
-                          className="mt-4 w-full bg-[#008CFF] text-white py-2 px-4 rounded-md hover:bg-[#00A0FF] font-semibold transition"
-                        >
-                            Ver Tutoriales
-                        </button>
-                        <button
-                          onClick={() => handleLanzar(game.gameId)}
+                          onClick={() => handleLanzar(game)}
                           className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 font-semibold transition"
                         >
                           Lanzar Juego
