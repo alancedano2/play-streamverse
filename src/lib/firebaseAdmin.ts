@@ -1,4 +1,3 @@
-// src/lib/firebaseAdmin.ts (Versión FINAL y ROBUSTA para Vercel)
 import * as admin from 'firebase-admin';
 import path from 'path';
 
