@@ -60,7 +60,7 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ game, onClose }) => (
 );
 
 export default function BibliotecaPage() {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser(); // Get user status
 
   const [activeTab, setActiveTab] = useState<'myGames' | 'requestGame'>('myGames');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -124,7 +124,10 @@ export default function BibliotecaPage() {
       }
     };
 
-    fetchUserGames();
+    // Only fetch if user is signed in
+    if (isSignedIn) {
+      fetchUserGames();
+    }
   }, [user, isLoaded, isSignedIn]);
 
 
@@ -225,6 +228,40 @@ export default function BibliotecaPage() {
     toastTimeoutRef.current = setTimeout(() => setToast(null), 4000);
   };
 
+  // If Clerk is still loading, show a loading message
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-[#1A1A1D] text-[#E0E0E0] flex justify-center items-center">
+        <p className="text-xl text-[#008CFF]">Cargando...</p>
+      </div>
+    );
+  }
+
+  // If the user is not signed in, show the Sign In/Sign Up buttons
+  if (!isSignedIn) {
+    return (
+      <div className="min-h-screen bg-[#1A1A1D] text-[#E0E0E0] flex flex-col justify-center items-center p-8">
+        <h1 className="text-4xl font-bold mb-6 text-[#008CFF] text-center">Acceso Restringido</h1>
+        <p className="text-lg text-[#B0B0B0] mb-8 text-center max-w-prose">
+          Debes iniciar sesión o registrarte para acceder a tu biblioteca personal.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Link href="/sign-in" passHref>
+            <button className="bg-[#008CFF] text-white py-3 px-8 rounded-md hover:bg-[#00A0FF] font-semibold text-lg transition-colors duration-200 shadow-lg w-full sm:w-auto">
+              Iniciar Sesión
+            </button>
+          </Link>
+          <Link href="/sign-up" passHref>
+            <button className="bg-green-600 text-white py-3 px-8 rounded-md hover:bg-green-700 font-semibold text-lg transition-colors duration-200 shadow-lg w-full sm:w-auto">
+              Registrarse
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // If the user is signed in, render the actual page content
   return (
     <div className="min-h-screen bg-[#1A1A1D] text-[#E0E0E0] p-8 pt-28 flex flex-col items-center">
       {toast && (
