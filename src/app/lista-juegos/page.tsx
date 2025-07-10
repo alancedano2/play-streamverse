@@ -1,14 +1,16 @@
-'use client'; // Marcar como Client Component
+'use client';
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { games, Game } from '@/data/games'; // Importa los datos de los juegos
-import { useUser } from '@clerk/nextjs'; // Importa useUser para obtener el ID del usuario
+import { games, Game } from '@/data/games';
+import { useUser } from '@clerk/nextjs';
+import { lanzarJuego } from '@/utils/api';
 
 export default function ListaJuegosPage() {
   const { user, isLoaded, isSignedIn } = useUser();
   const [addMessage, setAddMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<'success' | 'error' | null>(null);
+  const [loadingLaunch, setLoadingLaunch] = useState<string | null>(null);
 
   const handleAddToLibrary = async (game: Game) => {
     if (!isSignedIn || !user || !user.id || !user.username) {
@@ -24,16 +26,12 @@ export default function ListaJuegosPage() {
     try {
       const response = await fetch('/api/user-games/add', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           clerkId: user.id,
           username: user.username,
           gameId: game.id,
           gameName: game.name,
-          // Puedes incluir el status del juego si quieres almacenarlo en Firebase también
-          // status: game.status,
         }),
       });
 
@@ -45,14 +43,24 @@ export default function ListaJuegosPage() {
       } else {
         setAddMessage(`Error al añadir "${game.name}": ${data.error || 'Error desconocido'}`);
         setMessageType('error');
-        console.error('Error al añadir juego:', data.error);
       }
     } catch (error) {
       setAddMessage(`Error de conexión al añadir "${game.name}".`);
       setMessageType('error');
-      console.error('Network error adding game:', error);
     } finally {
       setTimeout(() => setAddMessage(null), 5000);
+    }
+  };
+
+  const handleLanzar = async (gameId: string) => {
+    try {
+      setLoadingLaunch(gameId);
+      const res = await lanzarJuego(gameId);
+      alert(res.status);
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setLoadingLaunch(null);
     }
   };
 
@@ -68,8 +76,7 @@ export default function ListaJuegosPage() {
     <div className="min-h-screen bg-[#1A1A1D] text-[#E0E0E0] p-8 pt-28 flex flex-col items-center">
       <h1 className="text-4xl font-bold mb-8 text-[#008CFF]">Lista de Juegos</h1>
       <p className="text-lg text-[#B0B0B0] text-center max-w-2xl mb-12">
-        Explora una vasta colección de juegos disponibles en StreamVerse Gaming.
-        ¡Prepárate para nuevas aventuras!
+        Explora una vasta colección de juegos disponibles en StreamVerse Gaming. ¡Prepárate para nuevas aventuras!
       </p>
 
       {addMessage && (
@@ -106,13 +113,18 @@ export default function ListaJuegosPage() {
                   {game.status}
                 </span>
               </div>
-              {/* Botón "Añadir a la biblioteca" - AHORA SIEMPRE ACTIVO */}
               <button
                 onClick={() => handleAddToLibrary(game)}
-                className="mt-4 w-full bg-[#008CFF] text-white py-2 px-4 rounded-md hover:bg-[#00A0FF] font-semibold transition"
-                // Se eliminó la condición 'disabled={game.status !== 'Disponible'}'
+                className="mt-2 w-full bg-[#008CFF] text-white py-2 px-4 rounded-md hover:bg-[#00A0FF] font-semibold transition"
               >
                 Añadir a la biblioteca
+              </button>
+              <button
+                onClick={() => handleLanzar(game.id)}
+                className="mt-2 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 font-semibold transition disabled:opacity-50"
+                disabled={loadingLaunch === game.id}
+              >
+                {loadingLaunch === game.id ? 'Lanzando...' : 'Lanzar juego'}
               </button>
             </div>
           </div>
