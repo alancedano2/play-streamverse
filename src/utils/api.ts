@@ -9,8 +9,8 @@ export async function lanzarJuego(gameId: string) {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || "Error al lanzar juego");
+    const error = await response.json();
+    throw new Error(error.error || "Error al lanzar el juego");
   }
 
   return await response.json();
