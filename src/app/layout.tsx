@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider unsafe_disableDevelopmentModeWarnings> {/* Added the prop here */}
+    <ClerkProvider> {/* Removed unsafe_disableDevelopmentModeWarnings prop */}
       <html lang="en">
         <body className={inter.className}>
           <Header />
