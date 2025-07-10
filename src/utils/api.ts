@@ -1,5 +1,5 @@
 export async function lanzarJuego(gameId: string) {
-  const res = await fetch('https://20f204adf8c1.ngrok-free.app/api/lanzar', {
+  const res = await fetch('https://82aa21c82b66.ngrok-free.app/api/lanzar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ gameId }),
