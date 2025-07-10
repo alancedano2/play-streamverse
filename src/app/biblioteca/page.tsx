@@ -4,7 +4,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { games, Game } from '@/data/games';
+// Importamos el tipo Game, pero el array 'games' se importa en lista-juegos/page.tsx
+import { games, Game } from '@/data/games'; // Asegúrate de que esta interfaz Game es compatible con los datos de Firebase
 import { useUser } from '@clerk/nextjs';
 
 // Define una interfaz para los juegos de la biblioteca del usuario, incluyendo campos de Firebase
@@ -19,6 +20,8 @@ interface UserGame extends Game {
   gameId: string; // ID del juego de la data/games o RAWG
   gameName: string; // Nombre del juego
   // Añade aquí cualquier otro campo que guardes en Firebase si es necesario
+  // ¡CORRECCIÓN AQUÍ! Ampliamos el tipo de 'status' para permitir 'Desconocido'
+  status: 'Disponible' | 'No disponible' | 'Desconocido'; 
 }
 
 // NUEVO: Componente Modal de Tutoriales
@@ -75,10 +78,8 @@ export default function BibliotecaPage() {
   const [loadingUserGames, setLoadingUserGames] = useState<boolean>(true);
   const [userGamesError, setUserGamesError] = useState<string | null>(null);
 
-  // NUEVO: Estado para el juego seleccionado en el modal
   const [selectedGameForTutorial, setSelectedGameForTutorial] = useState<UserGame | null>(null);
 
-  // --- Lógica para Cargar Juegos del Usuario desde Firebase ---
   useEffect(() => {
     const fetchUserGames = async () => {
       if (!isLoaded || !isSignedIn || !user || !user.id) {
@@ -110,9 +111,7 @@ export default function BibliotecaPage() {
             ...ug,
             logoUrl: originalGame?.logoUrl || '/path/to/default-logo.png',
             platform: originalGame?.platform || 'Desconocido',
-            status: originalGame?.status || 'Desconocido',
-            // Puedes añadir aquí propiedades específicas para tutoriales si las tienes en data/games
-            // Por ejemplo: tutorialUrl: originalGame?.tutorialUrl || null
+            status: originalGame?.status || 'Desconocido', // Aquí 'Desconocido' es ahora compatible
           };
         });
 
@@ -127,20 +126,17 @@ export default function BibliotecaPage() {
     };
 
     fetchUserGames();
-  }, [user, isLoaded, isSignedIn]); // Re-ejecuta cuando el usuario o su estado de carga cambie
+  }, [user, isLoaded, isSignedIn]);
 
-  // Función para abrir el modal de tutoriales
   const handleViewTutorials = (game: UserGame) => {
     setSelectedGameForTutorial(game);
   };
 
-  // Función para cerrar el modal de tutoriales
   const handleCloseTutorialModal = () => {
     setSelectedGameForTutorial(null);
   };
 
 
-  // --- El resto de tus funciones existentes ---
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -226,12 +222,10 @@ export default function BibliotecaPage() {
     }
   };
 
-  // --- Renderizado del componente ---
   return (
     <div className="min-h-screen bg-[#1A1A1D] text-[#E0E0E0] p-8 pt-28 flex flex-col items-center">
       <h1 className="text-4xl font-bold mb-8 text-[#008CFF]">Mi Biblioteca</h1>
 
-      {/* Contenedor de Pestañas */}
       <div className="flex justify-center mb-8 bg-[#282A31] rounded-xl p-2 gap-2 max-w-lg w-full">
         <button
           onClick={() => setActiveTab('myGames')}
@@ -249,7 +243,6 @@ export default function BibliotecaPage() {
         </button>
       </div>
 
-      {/* Contenido de las Pestañas */}
       <div className="w-full max-w-6xl">
         {activeTab === 'myGames' && (
           <div className="bg-[#282A31] rounded-md border border-[#3A3D44] shadow-lg p-8 text-center min-h-[400px] flex flex-col justify-center items-center">
@@ -258,7 +251,6 @@ export default function BibliotecaPage() {
 
             {!loadingUserGames && !userGamesError && (
               userGames.length > 0 ? (
-                // Si hay juegos, los mostramos en una cuadrícula
                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                   {userGames.map((game) => (
                     <div key={game.id} className="bg-[#1A1A1D] rounded-md border border-[#3A3D44] shadow-lg overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:shadow-xl">
@@ -281,9 +273,8 @@ export default function BibliotecaPage() {
                         <h2 className="text-xl font-semibold mb-2 text-[#00ADB5]">{game.gameName}</h2>
                         <p className="text-sm text-[#B0B0B0] mb-3">{game.platform}</p>
                         <p className="text-xs text-[#777]">Añadido: {new Date(game.addedAt._seconds * 1000).toLocaleDateString()}</p>
-                        {/* Botón para ver tutoriales - ¡MODIFICADO! */}
                         <button
-                          onClick={() => handleViewTutorials(game)} // Llama a la nueva función
+                          onClick={() => handleViewTutorials(game)}
                           className="mt-4 w-full bg-[#008CFF] text-white py-2 px-4 rounded-md hover:bg-[#00A0FF] font-semibold transition"
                         >
                             Ver Tutoriales
@@ -293,7 +284,6 @@ export default function BibliotecaPage() {
                   ))}
                 </div>
               ) : (
-                // Mensaje si no hay juegos en la biblioteca
                 <div className="text-center">
                   <p className="text-xl text-[#00ADB5] mb-4">{`&iexcl;Tu biblioteca está esperando juegos!`}</p>
                   <p className="text-[#B0B0B0]">
@@ -309,7 +299,6 @@ export default function BibliotecaPage() {
           <div className="bg-[#282A31] rounded-md border border-[#3A3D44] shadow-lg p-8 min-h-[400px]">
             <h2 className="text-2xl font-bold mb-6 text-[#00ADB5] text-center">Busca un Juego para Pedir</h2>
 
-            {/* Cuadro de búsqueda */}
             <div className="relative max-w-lg mx-auto mb-6">
               <input
                 type="text"
@@ -318,12 +307,10 @@ export default function BibliotecaPage() {
                 onChange={handleSearch}
                 className="w-full p-3 rounded-md bg-[#3F4147] border border-[#4F555F] text-[#E0E0E0] placeholder-[#B0B0B0] focus:outline-none focus:border-[#008CFF]"
               />
-              {/* Indicador de carga */}
               {loadingSearch && searchTerm.length > 2 && (
                 <div className="absolute z-20 top-full left-0 w-full p-2 text-center text-[#008CFF] font-semibold">Cargando...</div>
               )}
 
-              {/* Cuadro de sugerencias de búsqueda (aparece al escribir) */}
               {!loadingSearch && searchTerm.length > 2 && searchResults.length > 0 && (
                 <div className="absolute z-10 w-full bg-[#282A31] border border-[#3A3D44] rounded-md mt-1 shadow-lg max-h-60 overflow-y-auto">
                   {searchResults.map(game => (
@@ -338,7 +325,6 @@ export default function BibliotecaPage() {
                   ))}
                 </div>
               )}
-              {/* Mensaje si no hay resultados */}
               {!loadingSearch && searchTerm.length > 2 && searchResults.length === 0 && (
                 <div className="absolute z-10 w-full bg-[#282A31] border border-[#3A3D44] rounded-md mt-1 shadow-lg p-3 text-[#B0B0B0] text-center">
                   No se encontraron resultados para "{searchTerm}".
@@ -346,7 +332,6 @@ export default function BibliotecaPage() {
               )}
             </div>
 
-            {/* Mensaje de notificación al usuario */}
             {requestMessage && (
               <div className="mt-6 p-4 bg-green-700 bg-opacity-30 text-green-200 rounded-md border border-green-600 text-center max-w-lg mx-auto animate-fade-in-down">
                 {requestMessage}
