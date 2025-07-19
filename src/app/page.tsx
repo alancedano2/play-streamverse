@@ -72,7 +72,7 @@ export default function HomePage() {
       </div>
 
       <div className="mt-16 text-center text-[#B0B0B0]">
-        <p>¿Necesitas ayuda para conectar Sunshine? Visita nuestro canal de <Link href="https://discord.com/invite/p4k2EpQ8BZ" target="_blank" rel="noopener noreferrer" className="text-[#008CFF] hover:underline">Discord</Link>.</p> {/* Updated link and text */}
+        <p>¿Necesitas ayuda para conectar Parsec? Visita nuestro canal de <Link href="https://discord.com/invite/p4k2EpQ8BZ" target="_blank" rel="noopener noreferrer" className="text-[#008CFF] hover:underline">Discord</Link>.</p> {/* Updated link and text */}
       </div>
     </div>
   );
