@@ -43,6 +43,8 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true, // ⬅️ ESTA LÍNEA DESACTIVA LOS ERRORES DE ESLINT EN PRODUCCIÓN
   },
+  // ¡AÑADE ESTA LÍNEA AQUÍ PARA QUE NO VUELVA A FALLAR LA COMPILACIÓN DE NGVNC!
+  transpilePackages: ['@novnc/novnc'],
 };
 
 module.exports = nextConfig;
