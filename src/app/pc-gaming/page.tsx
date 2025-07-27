@@ -29,6 +29,7 @@ export default function PcGamingPage() {
       // Ajusta la ruta a donde pusiste rfb.js en tu carpeta public/
       // Ejemplo: si lo pusiste en public/novnc-static/rfb.js
       script.src = '/novnc-static/rfb.js';
+      script.type = 'module'; // <----------------- ¡ESTA ES LA LÍNEA NUEVA!
       script.onload = () => {
         console.log('noVNC script loaded successfully.');
         // Opcional: Ahora que RFB está en window, puedes ejecutar una acción
