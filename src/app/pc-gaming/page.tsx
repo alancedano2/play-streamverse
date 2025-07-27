@@ -51,7 +51,7 @@ export default function PcGamingPage() {
       const rfb = new RFB(vncCanvasRef.current, VNC_WEBSOCKET_URL, {
         wsProtocols: ['binary', 'base64'], // Protocolos recomendados para noVNC
         shared: true, // Permite múltiples conexiones
-        credentials: { password: '' } // Si tu VNC no tiene contraseña, déjalo vacío. Sino, pon la de tu VM.
+        credentials: { password: '66116611' } // Si tu VNC no tiene contraseña, déjalo vacío. Sino, pon la de tu VM.
       });
 
       rfb.addEventListener('connect', () => {
