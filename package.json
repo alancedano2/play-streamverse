@@ -11,6 +11,7 @@
   "dependencies": {
     "@clerk/nextjs": "^6.23.3",
     "@fortawesome/fontawesome-free": "^6.7.2",
+    "@novnc/novnc": "^1.6.0",
     "bcryptjs": "^3.0.2",
     "cross-env": "^7.0.3",
     "firebase": "^11.10.0",
