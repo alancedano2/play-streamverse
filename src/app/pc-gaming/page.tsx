@@ -19,23 +19,26 @@ export default function PcGamingPage() {
   const vncCanvasRef = useRef<HTMLDivElement>(null);
   const [vmStatus, setVmStatus] = useState<'off' | 'starting' | 'running' | 'error'>('off');
 
-  const VNC_WEBSOCKET_URL = 'wss://4.tcp.ngrok.io:17565'; // <--- ¡REEMPLAZA CON TU URL NGROK REAL!
+  // Asegúrate de que esta URL de ngrok sea la correcta y esté activa.
+  // Tu última captura muestra: wss://4.tcp.ngrok.io:17565
+  const VNC_WEBSOCKET_URL = 'wss://4.tcp.ngrok.io:17565'; 
 
-  // Nuevo useEffect para cargar el script de noVNC
+  // Nuevo useEffect para cargar el script de noVNC desde CDN
   useEffect(() => {
     // Solo carga si noVNC no está ya disponible
     if (typeof window.RFB === 'undefined') {
       const script = document.createElement('script');
-      // Ajusta la ruta a donde pusiste rfb.js en tu carpeta public/
-      // Ejemplo: si lo pusiste en public/novnc-static/rfb.js
-      script.src = '/novnc-static/rfb.js';
-      script.type = 'module'; // <----------------- ¡ESTA ES LA LÍNEA NUEVA!
+      // ¡USANDO CDN PARA NOVENTC! Esto carga rfb.js y sus dependencias (como deflate.js y zstream.js)
+      // desde un servidor externo, evitando problemas de rutas en tu despliegue.
+      // Puedes verificar la última versión disponible en unpkg.com/@novnc/novnc/
+      script.src = 'https://unpkg.com/@novnc/novnc@1.4.0/build/rfb.js'; 
+      script.type = 'module'; // Crucial para que el script se interprete como módulo ES6
+
       script.onload = () => {
-        console.log('noVNC script loaded successfully.');
-        // Opcional: Ahora que RFB está en window, puedes ejecutar una acción
+        console.log('noVNC script loaded successfully from CDN.');
       };
       script.onerror = (error) => {
-        console.error('Failed to load noVNC script:', error);
+        console.error('Failed to load noVNC script from CDN:', error);
         setVmStatus('error');
       };
       document.body.appendChild(script);
@@ -48,7 +51,7 @@ export default function PcGamingPage() {
         rfbRef.current = null;
       }
       // Opcional: Si quieres, puedes remover el script también, aunque no siempre es necesario
-      // const script = document.querySelector('script[src="/novnc-static/rfb.js"]');
+      // const script = document.querySelector('script[src="https://unpkg.com/@novnc/novnc@1.4.0/build/rfb.js"]');
       // if (script) script.remove();
     };
   }, []); // El array vacío asegura que se ejecuta una sola vez al montar
