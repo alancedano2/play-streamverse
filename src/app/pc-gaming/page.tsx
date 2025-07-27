@@ -87,7 +87,7 @@ export default function PcGamingPage() {
         setVmStatus('running');
       });
 
-      rfb.addEventListener('disconnect', (e) => {
+      rfb.addEventListener('disconnect', (e: { detail: { clean: boolean; message?: string } }) => {
         console.log('VNC Disconnected:', e.detail.clean ? 'Clean' : 'Dirty');
         setVmStatus('off');
       });
@@ -97,7 +97,7 @@ export default function PcGamingPage() {
         setVmStatus('error');
       });
 
-      rfb.addEventListener('desktopname', (e) => {
+      rfb.addEventListener('desktopname', (e: { detail: { name: string } }) => {
         console.log('VNC Desktop Name:', e.detail.name);
       });
 
