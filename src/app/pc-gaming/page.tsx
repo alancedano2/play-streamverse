@@ -1,16 +1,15 @@
 // src/app/pc-gaming/page.tsx
-'use client'; // ¡Importante para que funcione como Client Component en Next.js!
+'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-// Asegúrate de que noVNC esté instalado y su ruta sea correcta.
-// Si lo instalaste con npm/yarn, podría ser algo como 'novnc/lib/rfb'
-// O si lo copiaste a tu carpeta public, la ruta dependerá de dónde esté.
-// Por ejemplo, si está en public/novnc/core/rfb.js, entonces importarías así:
-// import RFB from '../../public/novnc/core/rfb.js'; // Ajusta la ruta según tu proyecto
-import RFB from '@novnc/novnc/lib/rfb'; // Ejemplo si lo tienes como paquete npm/yarn
+import dynamic from 'next/dynamic'; // <-- ¡Añade esta importación!
+
+// --- ¡IMPORTANTE! Modifica cómo importas RFB ---
+// Ya no importamos RFB directamente al principio del archivo.
+// Lo importaremos dinámicamente dentro del componente.
 
 export default function PcGamingPage() {
-  const rfbRef = useRef<RFB | null>(null);
+  const rfbRef = useRef<any | null>(null); // Cambiamos a 'any' temporalmente para evitar errores de tipo si RFB no está definido aún
   const vncCanvasRef = useRef<HTMLDivElement>(null);
   const [vmStatus, setVmStatus] = useState<'off' | 'starting' | 'running' | 'error'>('off');
 
@@ -20,17 +19,14 @@ export default function PcGamingPage() {
   const VNC_WEBSOCKET_URL = 'wss://4.tcp.ngrok.io:17565'; // <--- ¡REEMPLAZA CON TU URL NGROK REAL!
   // -----------------------------------------------------------------
 
-  // --- VNC Configuration (estos son puertos estándar de Proxmox) ---
-  // VNC port for your Proxmox VM. You might need to adjust this.
-  // This is the port that websockify proxies FROM your VM's internal VNC.
-  // If your VM's VNC is on 5900, websockify connects to 127.0.0.1:5900 by default.
-  // The websockify server itself is listening on 6080.
-  // const VNC_PORT = '6080'; // Esto se manejaría implícitamente en la URL de Ngrok
-  // const VNC_HOST = 'tu_ip_publica_o_dominio_de_router'; // Esto se reemplaza por Ngrok
-  // const VNC_PATH = ''; // noVNC default, usually empty for direct websockify
-  // -----------------------------------------------------------------
+  // Creamos un componente dinámico para RFB que solo se cargará en el cliente
+  const DynamicRFB = dynamic(async () => {
+    // Importa RFB SOLO cuando sea necesario y en el lado del cliente
+    const { default: RFB } = await import('@novnc/novnc/lib/rfb');
+    return RFB;
+  }, { ssr: false }); // <-- ¡Esto es CRUCIAL! No lo renderices en el servidor
 
-
+  // Ahora, dentro de tu función startVmAndStream, usa 'DynamicRFB' en lugar de 'RFB'
   const startVmAndStream = async () => {
     setVmStatus('starting');
     console.log('Attempting to connect to VNC via:', VNC_WEBSOCKET_URL);
@@ -48,37 +44,39 @@ export default function PcGamingPage() {
         rfbRef.current = null;
       }
 
-      const rfb = new RFB(vncCanvasRef.current, VNC_WEBSOCKET_URL, {
-        wsProtocols: ['binary', 'base64'], // Protocolos recomendados para noVNC
-        shared: true, // Permite múltiples conexiones
-        credentials: { password: '66116611' } // Si tu VNC no tiene contraseña, déjalo vacío. Sino, pon la de tu VM.
-      });
+      // Asegúrate de que DynamicRFB se ha cargado
+      if (typeof DynamicRFB === 'function') { // Verificar que es el componente/función cargado
+        // Instancia RFB utilizando el componente dinámico cargado
+        const rfb = new DynamicRFB(vncCanvasRef.current, VNC_WEBSOCKET_URL, {
+          wsProtocols: ['binary', 'base64'],
+          shared: true,
+          credentials: { password: '' }
+        });
 
-      rfb.addEventListener('connect', () => {
-        console.log('VNC Connected!');
-        setVmStatus('running');
-      });
+        rfb.addEventListener('connect', () => {
+          console.log('VNC Connected!');
+          setVmStatus('running');
+        });
 
-      rfb.addEventListener('disconnect', (e) => {
-        console.log('VNC Disconnected:', e.detail.clean ? 'Clean' : 'Dirty');
-        setVmStatus('off');
-        // Opcional: Intentar reconectar o mostrar un mensaje al usuario
-        if (!e.detail.clean) {
-          console.error('VNC connection was not clean. Attempting to reconnect...');
-          // setTimeout(startVmAndStream, 5000); // Reintentar después de 5 segundos
-        }
-      });
+        rfb.addEventListener('disconnect', (e) => {
+          console.log('VNC Disconnected:', e.detail.clean ? 'Clean' : 'Dirty');
+          setVmStatus('off');
+        });
 
-      rfb.addEventListener('securityfailure', () => {
-        console.error('VNC Security Failure!');
+        rfb.addEventListener('securityfailure', () => {
+          console.error('VNC Security Failure!');
+          setVmStatus('error');
+        });
+
+        rfb.addEventListener('desktopname', (e) => {
+          console.log('VNC Desktop Name:', e.detail.name);
+        });
+
+        rfbRef.current = rfb;
+      } else {
+        console.error("DynamicRFB did not load correctly. It's not a function.");
         setVmStatus('error');
-      });
-
-      rfb.addEventListener('desktopname', (e) => {
-        console.log('VNC Desktop Name:', e.detail.name);
-      });
-
-      rfbRef.current = rfb;
+      }
 
     } catch (error) {
       console.error('Error connecting to VNC:', error);
@@ -86,7 +84,7 @@ export default function PcGamingPage() {
     }
   };
 
-  // Función para manejar la detención o desconexión (opcional)
+  // ... (el resto de tu componente, como stopVmStream y el JSX del return)
   const stopVmStream = () => {
     if (rfbRef.current) {
       rfbRef.current.disconnect();
