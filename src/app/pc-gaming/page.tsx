@@ -3,14 +3,9 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-// ¡IMPORTANTE! Hemos eliminado:
-// import dynamic from 'next/dynamic';
-// Y cualquier importación directa de RFB
-
-// Asegúrate de que RFB esté disponible globalmente (declaración de tipo para TypeScript)
 declare global {
   interface Window {
-    RFB: any; // o el tipo RFB si tienes una definición de tipos para noVNC global
+    RFB: any;
   }
 }
 
@@ -19,42 +14,32 @@ export default function PcGamingPage() {
   const vncCanvasRef = useRef<HTMLDivElement>(null);
   const [vmStatus, setVmStatus] = useState<'off' | 'starting' | 'running' | 'error'>('off');
 
-  // Asegúrate de que esta URL de ngrok sea la correcta y esté activa.
-  // Tu última captura muestra: wss://4.tcp.ngrok.io:17565
   const VNC_WEBSOCKET_URL = 'wss://4.tcp.ngrok.io:17565'; 
 
-  // Nuevo useEffect para cargar el script de noVNC desde CDN
   useEffect(() => {
-    // Solo carga si noVNC no está ya disponible
     if (typeof window.RFB === 'undefined') {
       const script = document.createElement('script');
-      // ¡USANDO CDN PARA NOVENTC! Esto carga rfb.js y sus dependencias (como deflate.js y zstream.js)
-      // desde un servidor externo, evitando problemas de rutas en tu despliegue.
-      // Puedes verificar la última versión disponible en unpkg.com/@novnc/novnc/
-      script.src = 'https://unpkg.com/@novnc/novnc@1.4.0/build/rfb.js'; 
-      script.type = 'module'; // Crucial para que el script se interprete como módulo ES6
+      // ¡¡CAMBIA ESTA LÍNEA PARA USAR LA URL DE TU CLOUDFLARE WORKER!!
+      script.src = 'https://novnc-proxy.fraelvillegasplay8.workers.dev'; // <--- ¡AQUÍ VA LA URL DE TU WORKER!
+      script.type = 'module'; 
 
       script.onload = () => {
-        console.log('noVNC script loaded successfully from CDN.');
+        console.log('noVNC script loaded successfully via Cloudflare Worker.'); 
       };
       script.onerror = (error) => {
-        console.error('Failed to load noVNC script from CDN:', error);
+        console.error('Failed to load noVNC script via Cloudflare Worker:', error); 
         setVmStatus('error');
       };
       document.body.appendChild(script);
     }
 
-    // Limpieza al desmontar el componente
     return () => {
       if (rfbRef.current) {
         rfbRef.current.disconnect();
         rfbRef.current = null;
       }
-      // Opcional: Si quieres, puedes remover el script también, aunque no siempre es necesario
-      // const script = document.querySelector('script[src="https://unpkg.com/@novnc/novnc@1.4.0/build/rfb.js"]');
-      // if (script) script.remove();
     };
-  }, []); // El array vacío asegura que se ejecuta una sola vez al montar
+  }, []); 
 
   const startVmAndStream = async () => {
     setVmStatus('starting');
@@ -66,7 +51,6 @@ export default function PcGamingPage() {
       return;
     }
 
-    // Asegúrate de que RFB esté disponible en el objeto global window
     if (typeof window.RFB === 'undefined') {
       console.error('noVNC script not loaded yet. Please wait or check script path.');
       setVmStatus('error');
@@ -79,7 +63,6 @@ export default function PcGamingPage() {
         rfbRef.current = null;
       }
 
-      // Ahora accedemos a RFB desde window
       const rfb = new window.RFB(vncCanvasRef.current, VNC_WEBSOCKET_URL, {
         wsProtocols: ['binary', 'base64'],
         shared: true,
