@@ -1,7 +1,7 @@
 import React from 'react';
 
 const KVMPage: React.FC = () => {
-  const iframeSrc = "https://192.168.1.18:8006/?console=kvm&novnc=1&vmid=100&vmname=Windows10&node=pve&resize=off&cmd=";
+  const iframeSrc = "https://c25a52200f91.ngrok-free.app/?console=kvm&novnc=1&vmid=100&vmname=Windows10&node=pve&resize=off&cmd=";
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
